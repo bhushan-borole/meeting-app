@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block nav %}
+    <ul class="nav">
+        <!-- Main menu -->
+        <li><a href="/dashboard"><i class="glyphicon glyphicon-home"></i> Dashboard</a></li>
+        <li><a href="/all_meetings"><i class="glyphicon glyphicon-list"></i> All Meetings</a></li>
+        <li><a href="/add_meeting"><i class="glyphicon glyphicon-list"></i> Add Meeting</a></li>
+        <li class="current"><a href="/add_task"><i class="glyphicon glyphicon-tasks"></i>Add Task</a></li>
+        <li><a href="/all_tasks"><i class="glyphicon glyphicon-tasks"></i>All Tasks</a></li>
+        <li><a href="/"><i class="glyphicon glyphicon-log-out"></i> Logout</a></li>
+    </ul>
+{% endblock %}
+
+{% block content_meetings %}
+    <form class="form-horizontal" role="form" method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="details" class="col-sm-2 control-label">Details</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" id="details" name="details" placeholder="Details...">
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+                <button type="submit" class="btn btn-primary">Add Task</button>
+            </div>
+        </div>
+    </form>
+{% endblock %}

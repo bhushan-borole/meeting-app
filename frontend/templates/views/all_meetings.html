@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block nav %}
+    <ul class="nav">
+        <!-- Main menu -->
+        <li><a href="/dashboard"><i class="glyphicon glyphicon-home"></i> Dashboard</a></li>
+        <li class="current"><a href="/all_meetings"><i class="glyphicon glyphicon-list"></i> All Meetings</a></li>
+        <li><a href="/add_meeting"><i class="glyphicon glyphicon-list"></i> Add Meeting</a></li>
+        <li><a href="/add_task"><i class="glyphicon glyphicon-tasks"></i>Add Task</a></li>
+        <li><a href="/all_tasks"><i class="glyphicon glyphicon-tasks"></i>All Tasks</a></li>
+        <li><a href="/"><i class="glyphicon glyphicon-log-out"></i> Logout</a></li>
+    </ul>
+{% endblock %}
+
+{% block content_meetings %}
+    <div class="row">
+    {% for x in meeting %}
+
+            <div class="col m4">
+                <div class="content-box-large">
+                    <div class="panel-heading">
+                        <div class="panel-title"><h1>Meeting Title: {{ x.1 }}</h1></div>
+                    </div>
+                    <div class="panel-body">
+                        <h3>Venue: {{ x.2 }}</h3>
+                        <h3>Id: {{ x.0 }}</h3>
+                    </div>
+                    <div class="panel-body">
+                        <h3>Tasks: </h3>
+                        {% for task in x.5 %}
+                            <h3>{{ task }}</h3>
+                        {% endfor %}
+                    </div>
+                    <div class="panel-footer">
+                        <h3>Conducted By: {{ x.3 }}</h3>
+                    </div>
+
+                    <div>
+                        <a class="btn btn-danger" href="/delete_meeting/{{ x.0 }}/">Delete</a>
+                        <a class="btn btn-warning" href="#" id="edit" onclick="document.getElementById('edit_meeting{{ x.0 }}').style.display='';
+                                                                               document.getElementById('add_task{{ x.0 }}').style.display='none';return false;">Edit</a>
+                        <a class="btn href=#" id="add_task" onclick="document.getElementById('edit_meeting{{ x.0 }}').style.display='none';
+                                                                     document.getElementById('add_task{{ x.0 }}').style.display='';return false;">Assign Task</a>
+                    </div>
+                    <br>
+                    <div class="panel-options" id="edit_meeting{{ x.0 }}" style="display: none;">
+                        <form action="/edit_meeting/{{ x.0 }}/" method="post">
+                            {% csrf_token %}
+                            <label for="venue" class="control-label">New Venue</label>
+                            <div>
+                                <input type="text" class="form-control" id="venue" name="venue" placeholder="Venue...">
+                            </div><br>
+
+                            <label for="title" class="control-label">New Title</label>
+                            <div>
+                                <input type="text" class="form-control" id="title" name="title" placeholder="Title...">
+                            </div>
+                            <input type="hidden" value="{{ x.4 }}" id="user_id" name="user_id"><br>
+                            <button type="submit" class="btn btn-danger">Edit</button>
+                            <a class="btn" href="#" onclick="document.getElementById('edit_meeting{{ x.0 }}').style.display='none';return false;">Cancel</a>
+                        </form>
+                    </div>
+                    <div class="panel-options" id="add_task{{ x.0 }}" style="display: none;">
+                        <form action="/assign_task/{{ x.0 }}/" method="post">
+                        {% csrf_token %}
+                            <select class="select2-arrow" name="task" id="task">
+                                {% for task in all_tasks %}
+                                    <option value="{{ task.id }}">{{ task.details }}</option>
+                                {% endfor %}
+                            </select><br><br>
+                        <button type="submit" class="btn btn-danger">Assign</button>
+                        <a class="btn" href="#" onclick="document.getElementById('add_task{{ x.0 }}').style.display='none';return false;">Cancel</a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+    {% endfor %}
+    </div>
+{% endblock %}

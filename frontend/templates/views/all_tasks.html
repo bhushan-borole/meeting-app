@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block nav %}
+    <ul class="nav">
+        <!-- Main menu -->
+        <li><a href="/dashboard"><i class="glyphicon glyphicon-home"></i> Dashboard</a></li>
+        <li><a href="/all_meetings"><i class="glyphicon glyphicon-list"></i> All Meetings</a></li>
+        <li><a href="/add_meeting"><i class="glyphicon glyphicon-list"></i> Add Meeting</a></li>
+        <li><a href="/add_task"><i class="glyphicon glyphicon-tasks"></i>Add Task</a></li>
+        <li class="current"><a href="/all_tasks"><i class="glyphicon glyphicon-tasks"></i>All Tasks</a></li>
+        <li><a href="/"><i class="glyphicon glyphicon-log-out"></i> Logout</a></li>
+    </ul>
+{% endblock %}
+
+{% block content_meetings %}
+    <div class="row">
+        {% for task in tasks %}
+            <div class="col m4">
+                <div class="content-box-large">
+                    <div class="panel-body">
+                        <h3>Task Id: </h3><br>
+                        <h4>{{ task.id }}</h4>
+                    </div>
+                    <div class="panel-body">
+                        <h3>Task Description: </h3><br>
+                        <h4>{{ task.details }}</h4>
+                    </div>
+
+                    <div>
+                        <a class="btn btn-danger" href="/delete_task/{{ task.id }}/">Delete</a>
+                        <a class="btn btn-warning" href="#" id="edit" onclick="document.getElementById('edit_task{{ task.id }}').style.display='';return false;">Edit</a>
+                    </div>
+                    <br>
+                    <div class="panel-options" id="edit_task{{ task.id }}" style="display: none;">
+                        <form action="/edit_task/{{ task.id }}/" method="post">
+                            {% csrf_token %}
+                            <label for="details" class="control-label">New Details</label>
+                            <div>
+                                <input type="text" class="form-control" id="details" name="details" placeholder="Details...">
+                            </div><br>
+                            <button type="submit" class="btn btn-danger">Edit</button>
+                            <a class="btn" href="#" onclick="document.getElementById('edit_task{{ task.id }}').style.display='none';return false;">Cancel</a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
