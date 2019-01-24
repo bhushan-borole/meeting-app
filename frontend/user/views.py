@@ -2,6 +2,8 @@ from django.shortcuts import render, redirect
 import requests
 from django.contrib import messages
 import json
+import smtplib
+from email.mime.text import MIMEText
 
 
 def _form_view(request, template_name):
@@ -177,6 +179,100 @@ def edit_task(request, id):
             return redirect('/all_tasks')
     else:
         return render(request, 'views/all_tasks.html')
+
+
+def get_userid(email, all_users):
+    for user in all_users:
+        if email == user['email']:
+            return user['id']
+
+
+def send_mail(email, code):
+    msg = MIMEText(code)
+    msg['Subject'] = 'This is the OTP'
+    msg['From'] = 'storm_breaker2698@outlook.com'
+    msg['To'] = email
+
+    server = smtplib.SMTP('smtp-mail.outlook.com', 587)
+    server.starttls()
+    server.login('storm_breaker2698@outlook.com', 'Zxcvbnm@123')
+    server.sendmail('storm_breaker2698@outlook.com', email, msg.as_string())
+    server.quit()
+    print('mail sent')
+
+
+def signup(request):
+    if request.method == 'POST':
+        body = {
+            'email': request.POST['email'],
+            'name': request.POST['username'],
+            'role': request.POST['role']
+        }
+        url = 'http://localhost:1234/rest/user'
+        response = requests.post(url, json=body)
+        if response.status_code == 200:
+            url = 'http://localhost:1234/rest/users'
+            all_users = requests.get(url)
+            data = json.loads(all_users.text)
+            id = get_userid(request.POST['email'], data)
+            print(id)
+            code_url = 'http://localhost:1234/rest/user/credentials/{}'.format(id)
+            code_response = requests.get(code_url)
+            if code_response.status_code == 200:
+                send_mail(request.POST['email'], code_response.text)
+                return redirect('/verify_code/{}'.format(id))
+            else:
+                messages.error(request, 'username or password not correct')
+                return redirect('/signup')
+    else:
+        return render(request, template_name="views/signup.html")
+
+
+def verify_code(request, id):
+    if request.method == 'POST':
+        code = int(request.POST['code'])
+        print(code)
+        url = 'http://localhost:1234/rest/user/verify/{}/{}'.format(id, code)
+        response = requests.get(url)
+        print(response.text)
+        if response.text == 'true':
+            return redirect('/set_credentials/{}'.format(id))
+        else:
+            messages.error(request, 'Enter a valid OTP')
+            return redirect('/verify_code/{}'.format(id))
+    else:
+        return render(request, template_name='views/verify_code.html')
+
+
+def get_username(id):
+    url = 'http://localhost:1234/rest/user/{}'.format(id)
+    response = requests.get(url)
+    if response.status_code == 200:
+        data = json.loads(response.text)
+        return data['email']
+
+
+def set_creds(request, id):
+    if request.method == 'POST':
+        if request.POST['pass'] == request.POST['pass1']:
+            username = get_username(id)
+            body = {
+                'username': username,
+                'password': request.POST['pass']
+            }
+            print(body)
+            url = 'http://localhost:1234/rest/user/password/{}'.format(id)
+            response = requests.post(url, json=body)
+            if response.status_code == 200:
+                return redirect('/')
+            else:
+                messages.error(request, 'something went wrong')
+                return redirect('/set_credentials/{}'.format(id))
+        else:
+            messages.error(request, 'Password does not match')
+            return redirect('/set_credentials/{}'.format(id))
+    else:
+        return render(request, template_name='views/set_credentials.html')
 
 
 

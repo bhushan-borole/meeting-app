@@ -2,7 +2,8 @@ from django.urls import path
 
 from .views import login, dashboard, all_meetings, delete_meeting, \
                    add_meeting, edit_meeting, add_task, assign_task, \
-                   all_tasks, delete_task, edit_task
+                   all_tasks, delete_task, edit_task, signup, verify_code, \
+                   set_creds
 
 
 urlpatterns = [
@@ -16,5 +17,8 @@ urlpatterns = [
     path('assign_task/<int:mid>/', assign_task),
     path('all_tasks/', all_tasks),
     path('delete_task/<int:id>/', delete_task),
-    path('edit_task/<int:id>/', edit_task)
+    path('edit_task/<int:id>/', edit_task),
+    path('signup/', signup),
+    path('verify_code/<int:id>/', verify_code),
+    path('set_credentials/<int:id>/', set_creds)
 ]
