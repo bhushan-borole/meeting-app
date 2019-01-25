@@ -201,29 +201,46 @@ def send_mail(email, code):
     print('mail sent')
 
 
+def check_email(email):
+    url = 'http://localhost:1234/rest/users'
+    response = requests.get(url)
+    if response.status_code == 200:
+        data = json.loads(response.text)
+        all_emails = [x['email'] for x in data]
+        print(all_emails)
+        if email in all_emails:
+            return False
+        else:
+            return True
+
+
 def signup(request):
     if request.method == 'POST':
-        body = {
-            'email': request.POST['email'],
-            'name': request.POST['username'],
-            'role': request.POST['role']
-        }
-        url = 'http://localhost:1234/rest/user'
-        response = requests.post(url, json=body)
-        if response.status_code == 200:
-            url = 'http://localhost:1234/rest/users'
-            all_users = requests.get(url)
-            data = json.loads(all_users.text)
-            id = get_userid(request.POST['email'], data)
-            print(id)
-            code_url = 'http://localhost:1234/rest/user/credentials/{}'.format(id)
-            code_response = requests.get(code_url)
-            if code_response.status_code == 200:
-                send_mail(request.POST['email'], code_response.text)
-                return redirect('/verify_code/{}'.format(id))
-            else:
-                messages.error(request, 'username or password not correct')
-                return redirect('/signup')
+        if check_email(request.POST['email']):
+            print('email is valid')
+            body = {
+                'email': request.POST['email'],
+                'name': request.POST['username'],
+                'role': request.POST['role']
+            }
+            url = 'http://localhost:1234/rest/user'
+            response = requests.post(url, json=body)
+            if response.status_code == 200:
+                url = 'http://localhost:1234/rest/users'
+                all_users = requests.get(url)
+                data = json.loads(all_users.text)
+                id = get_userid(request.POST['email'], data)
+                code_url = 'http://localhost:1234/rest/user/credentials/{}'.format(id)
+                code_response = requests.get(code_url)
+                if code_response.status_code == 200:
+                    send_mail(request.POST['email'], code_response.text)
+                    return redirect('/verify_code/{}'.format(id))
+                else:
+                    messages.error(request, 'username or password not correct')
+                    return redirect('/signup')
+        else:
+            messages.error(request, 'email already exists')
+            return redirect('/signup')
     else:
         return render(request, template_name="views/signup.html")
 
